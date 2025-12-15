@@ -3,54 +3,6 @@
     "cliente_1": {
       "nome": "ABL",
       "script": ""
-    },
-    "cliente_2": {
-      "nome": "MJN",
-      "script": "import time\n\npa.click(753, 319)\nsleep_seguro(2)\nesperar_se_pausado()\npa.click(763, 378)\nsleep_seguro(2)\nesperar_se_pausado()\npa.click(753, 319)\nsleep_seguro(2)\nesperar_se_pausado()\npa.click(763, 378)\nsleep_seguro(2)\nesperar_se_pausado()\npa.click(753, 319)\nsleep_seguro(2)\nesperar_se_pausado()\npa.click(763, 378)\n"
-    },
-    "cliente_3": {
-      "nome": "GRUNENTHAL",
-      "script": ""
-    },
-    "cliente_4": {
-      "nome": "ISDIN",
-      "script": ""
-    },
-    "cliente_5": {
-      "nome": "GALDERMA",
-      "script": ""
-    },
-    "cliente_6": {
-      "nome": "CAPSUGEL",
-      "script": ""
-    },
-    "cliente_7": {
-      "nome": "UCB",
-      "script": ""
-    },
-    "cliente_8": {
-      "nome": "DR.WOLF",
-      "script": ""
-    },
-    "cliente_9": {
-      "nome": "GILEAD",
-      "script": ""
-    },
-    "cliente_10": {
-      "nome": "CHEMYUNION",
-      "script": ""
-    },
-    "cliente_11": {
-      "nome": "UNICHEM",
-      "script": ""
-    },
-    "cliente_12": {
-      "nome": "IPSEN",
-      "script": ""
-    },
-    "cliente_13": {
-      "nome": "MK8",
-      "script": ""
     }
   }
 }
