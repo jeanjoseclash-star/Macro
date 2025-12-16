@@ -3,223 +3,190 @@ from tkinter import scrolledtext, ttk, simpledialog
 import threading
 import json
 import os
+import sys
 import pyautogui as pa
-import keyboard
 import time
+import keyboard
 
 CONFIG_ARQUIVO = "config.json"
 
 executando = False
-pausado = False
 cliente_atual_id = None
+
+pa.FAILSAFE = False
+pa.PAUSE = 0
 
 # ---------------- CONFIG ---------------- #
 
 def carregar_config():
     if not os.path.exists(CONFIG_ARQUIVO):
         return {"clientes": {}}
-
     with open(CONFIG_ARQUIVO, "r", encoding="utf-8") as f:
         return json.load(f)
-
 
 def salvar_config():
     with open(CONFIG_ARQUIVO, "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=2)
 
-
 config = carregar_config()
 
 # ---------------- CONTROLE ---------------- #
 
-def sleep_seguro(segundos):
+def check():
+    if not executando:
+        raise SystemExit
+
+def sleep(segundos):
     inicio = time.time()
     while time.time() - inicio < segundos:
-        if not executando:
-            return
+        check()
+        time.sleep(0.01)
 
-        while pausado:
-            time.sleep(0.1)
-            if not executando:
-                return
+def click(x, y):
+    check()
+    pa.click(x, y)
 
-        time.sleep(0.05)
+def write(texto, interval=0.05):
+    check()
+    pa.write(texto, interval=interval)
 
+def press(tecla):
+    check()
+    pa.press(tecla)
 
-def esperar_se_pausado():
-    while pausado:
-        time.sleep(0.1)
-        if not executando:
-            return
-
-# ---------------- FUNÇÕES MACRO ---------------- #
+# ---------------- EXECUÇÃO ---------------- #
 
 def executar_tarefa():
-    global executando, pausado
+    global executando
 
-    if executando:
-        print("Macro já está em execução.")
-        return
-
-    if not cliente_atual_id:
-        print("Nenhum cliente selecionado.")
+    if executando or not cliente_atual_id:
         return
 
     executando = True
-    pausado = False
+    btn_play.config(text="⏵ Play", bg="#2ecc71", fg="white", state="disabled")
+    status_var.set("Status: Executando")
 
     codigo = editor.get("1.0", "end-1c")
 
     def run():
         global executando
+
+        contexto = {
+            "click": click,
+            "write": write,
+            "press": press,
+            "sleep": sleep,
+            "qtd": 1
+        }
+
         try:
-            exec(codigo, globals())
+            exec(codigo, contexto)
+            qtd = int(contexto.get("qtd", 1))
+
+            progress["maximum"] = qtd
+            progress["value"] = 0
+
+            for i in range(qtd):
+                check()
+                progress["value"] = i + 1
+                status_var.set(f"Status: Executando ({i+1}/{qtd})")
+                exec(codigo, contexto)
+
+            status_var.set("Status: Finalizado")
+
+        except SystemExit:
+            status_var.set("Status: Interrompido")
+
         except Exception as e:
+            status_var.set("Status: Erro")
             print("Erro no script:", e)
+
         executando = False
+        btn_play.config(text="▶ Play", bg="SystemButtonFace", fg="black", state="normal")
 
     threading.Thread(target=run, daemon=True).start()
 
-
-def parar_tarefa():
-    global executando, pausado
-    executando = False
-    pausado = False
-    print("Tarefa parada.")
-
+# ---------------- STOP GLOBAL (ESC) ---------------- #
 
 def stop_global():
-    global executando, pausado
+    global executando
     executando = False
-    pausado = False
-    print("STOP GLOBAL acionado (F1)")
+    status_var.set("Status: Parado")
 
+def listener_esc():
+    keyboard.on_press_key("esc", lambda e: stop_global())
+    keyboard.wait()
 
-def pause_resume():
-    global pausado
-
-    if not executando:
-        return
-
-    pausado = not pausado
-
-    if pausado:
-        print("MACRO PAUSADO (F2)")
-    else:
-        print("MACRO RETOMADO (F2)")
-
-
-def salvar_codigo():
-    if not cliente_atual_id:
-        print("Nenhum cliente selecionado.")
-        return
-
-    script = editor.get("1.0", "end-1c")
-    config["clientes"][cliente_atual_id]["script"] = script
-    salvar_config()
-    print("Macro salvo para o cliente selecionado.")
+threading.Thread(target=listener_esc, daemon=True).start()
 
 # ---------------- CLIENTES ---------------- #
 
 def listar_clientes():
-    return [
-        f"{dados['nome']} ({cid})"
-        for cid, dados in config["clientes"].items()
-    ]
-
+    return [f"{d['nome']} ({cid})" for cid, d in config["clientes"].items()]
 
 def selecionar_cliente(event=None):
     global cliente_atual_id
-
     valor = cliente_var.get()
     if not valor:
         return
-
     cliente_atual_id = valor.split("(")[-1].replace(")", "")
-    script = config["clientes"][cliente_atual_id]["script"]
-
     editor.delete("1.0", "end")
-    editor.insert("1.0", script)
-
+    editor.insert("1.0", config["clientes"][cliente_atual_id]["script"])
 
 def novo_cliente():
     nome = simpledialog.askstring("Novo cliente", "Nome do cliente:")
     if not nome:
         return
-
-    novo_id = f"cliente_{len(config['clientes']) + 1}"
-
-    config["clientes"][novo_id] = {
-        "nome": nome,
-        "script": ""
-    }
-
+    cid = f"cliente_{len(config['clientes'])+1}"
+    config["clientes"][cid] = {"nome": nome, "script": ""}
     salvar_config()
-    combo_clientes["values"] = listar_clientes()
-    cliente_var.set(f"{nome} ({novo_id})")
+    combo["values"] = listar_clientes()
+    cliente_var.set(f"{nome} ({cid})")
     selecionar_cliente()
 
-# ---------------- CAPTURA ---------------- #
-
-def capturar_coordenadas():
-    print("Posicione o mouse e pressione F8 para capturar...")
-
-    def esperar_f8():
-        keyboard.wait("F8")
-        x, y = pa.position()
-
-        linha = f"\n# Coordenada capturada\npa.click({x}, {y})\n"
-        editor.insert(tk.END, linha)
-        editor.see(tk.END)
-
-        print(f"Coordenadas capturadas: {x}, {y}")
-
-    threading.Thread(target=esperar_f8, daemon=True).start()
+def salvar_codigo():
+    if cliente_atual_id:
+        config["clientes"][cliente_atual_id]["script"] = editor.get("1.0", "end-1c")
+        salvar_config()
 
 # ---------------- INTERFACE ---------------- #
 
+def caminho_recurso(nome):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, nome)
+    return os.path.join(os.path.abspath("."), nome)
+
+
+
 janela = tk.Tk()
-janela.title("Macro by Luft")
-janela.geometry("350x500")
+janela.title("Macro by Jean")
+janela.geometry("360x500")
 
-frame_botoes = tk.Frame(janela)
-frame_botoes.pack(fill="x")
+janela.iconbitmap(caminho_recurso("icone.ico"))
 
-btn_play = tk.Button(frame_botoes, text="▶ Play", command=executar_tarefa)
-btn_play.pack(side="left", padx=2, pady=2)
+top = tk.Frame(janela)
+top.pack(fill="x")
 
-btn_stop = tk.Button(frame_botoes, text="■ Stop", command=parar_tarefa)
-btn_stop.pack(side="left", padx=2)
+btn_play = tk.Button(top, text="▶ Play", command=executar_tarefa)
+btn_play.pack(side="left", padx=2)
 
-btn_salvar = tk.Button(frame_botoes, text="💾 Salvar", command=salvar_codigo)
-btn_salvar.pack(side="left", padx=2)
-
-btn_capturar = tk.Button(frame_botoes, text="CDS", command=capturar_coordenadas)
-btn_capturar.pack(side="left", padx=2)
-
-btn_novo = tk.Button(frame_botoes, text="➕ Novo", command=novo_cliente)
-btn_novo.pack(side="left", padx=2)
+tk.Button(top, text="■ Stop", command=stop_global).pack(side="left", padx=2)
+tk.Button(top, text="💾 Salvar", command=salvar_codigo).pack(side="left", padx=2)
+tk.Button(top, text="➕ Novo", command=novo_cliente).pack(side="left", padx=2)
 
 cliente_var = tk.StringVar()
+combo = ttk.Combobox(top, textvariable=cliente_var, values=listar_clientes(),
+                     state="readonly", width=30)
+combo.pack(side="left", padx=5)
+combo.bind("<<ComboboxSelected>>", selecionar_cliente)
 
-combo_clientes = ttk.Combobox(
-    frame_botoes,
-    textvariable=cliente_var,
-    values=listar_clientes(),
-    state="readonly",
-    width=30
-)
-combo_clientes.pack(side="left", padx=10)
-combo_clientes.bind("<<ComboboxSelected>>", selecionar_cliente)
+status_var = tk.StringVar(value="Status: Parado")
+tk.Label(janela, textvariable=status_var).pack(fill="x", padx=5)
 
-editor = scrolledtext.ScrolledText(janela, wrap=tk.NONE)
+progress = ttk.Progressbar(janela, orient="horizontal", mode="determinate")
+progress.pack(fill="x", padx=5, pady=5)
+
+editor = scrolledtext.ScrolledText(janela)
 editor.pack(expand=True, fill="both")
-
-# ---------------- HOTKEYS GLOBAIS ---------------- #
-
-keyboard.add_hotkey("F1", stop_global)
-keyboard.add_hotkey("F2", pause_resume)
-
-# ---------------- LOOP ---------------- #
 
 janela.mainloop()
