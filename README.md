@@ -1,175 +1,213 @@
-# Macro
-Macro desenvolvido em python para auxiliar o adm da Luft 
+# Macro by Jean
 
-# Macro by Luft
+## 1. Visão Geral
 
-Aplicação desktop em **Python + Tkinter** para criação e execução de **macros multi‑cliente**, com suporte a captura de coordenadas, hotkeys globais e persistência em um único arquivo `config.json`.
+O **Macro by Jean** é uma aplicação desktop desenvolvida em Python, com interface gráfica baseada em **Tkinter**, destinada à automação de tarefas repetitivas por meio da simulação de ações humanas (mouse e teclado).
 
-O projeto foi desenhado para cenários onde múltiplos clientes/janelas exigem **macros diferentes**, mantendo tudo organizado e controlável por interface gráfica.
-
----
-
-## 📌 Funcionalidades
-
-* 📂 **Gerenciamento de múltiplos clientes**
-
-  * Cada cliente possui seu próprio script de macro
-  * Todos os dados são armazenados em **um único `config.json`**
-
-* ▶️ **Execução de macros**
-
-* ⏹️ **Stop global (F1)**
-
-* ⏸️ **Pause / Resume (F2)**
-
-* 📍 **Captura de coordenadas do mouse (F8)**
-
-* 💾 Salvamento automático por cliente
-
-* 🔄 Execução segura com controle de threads
+O software foi projetado como **ferramenta de apoio operacional**, sem integração direta com sistemas corporativos, banco de dados ou APIs internas, garantindo baixo risco técnico e fácil auditoria.
 
 ---
 
-## 🧠 Conceito de Funcionamento
+## 2. Objetivo do Sistema
 
-* A interface permite selecionar um **cliente** via Combobox
-
-* Cada cliente possui:
-
-  * `id`
-  * `nome`
-  * `script` (macro em Python)
-
-* O script é executado dinamicamente via `exec()`
-
-* O controle de execução é feito por flags globais:
-
-  * `executando`
-  * `pausado`
+* Automatizar tarefas manuais repetitivas
+* Reduzir tempo operacional
+* Minimizar erros humanos
+* Padronizar execuções por cliente/processo
+* Permitir controle total da execução
 
 ---
 
-## ⌨️ Hotkeys Globais
+## 3. Público-Alvo
 
-| Tecla  | Função                                         |
-| ------ | ---------------------------------------------- |
-| **F1** | Stop global (interrompe imediatamente o macro) |
-| **F2** | Pause / Resume do macro                        |
-| **F8** | Captura coordenadas do mouse                   |
-
-> As hotkeys funcionam **mesmo fora da janela do programa**.
+* Usuários operacionais
+* Supervisores de processo
+* Equipe de Tecnologia da Informação (TI)
 
 ---
 
-## 📁 Estrutura do Projeto
+## 4. Funcionalidades Principais
+
+* Interface gráfica simples e intuitiva
+* Cadastro e seleção de múltiplos clientes
+* Scripts independentes por cliente
+* Execução controlada por quantidade de ciclos (`qtd`)
+* Barra de progresso visual
+* Salvamento automático de scripts
+* Interrupção manual por botão
+* Interrupção global imediata via tecla **ESC**
+* Persistência de dados em arquivo JSON
+* Distribuição via executável e instalador
+
+---
+
+## 5. Tecnologias Utilizadas
+
+* **Python 3.x**
+* **Tkinter** – Interface gráfica
+* **PyAutoGUI** – Automação de mouse e teclado
+* **Keyboard** – Captura global de teclas
+* **JSON** – Persistência de configuração
+* **PyInstaller** – Geração de executável
+* **Inno Setup** – Criação do instalador
+
+---
+
+## 6. Arquitetura do Sistema
+
+### 6.1 Arquitetura Geral
+
+O sistema opera inteiramente em **modo local**, seguindo o fluxo:
+
+1. Inicialização da interface gráfica
+2. Leitura do arquivo `config.json`
+3. Seleção do cliente
+4. Execução do script no contexto controlado
+5. Monitoramento e interrupção sob demanda
+
+Não há comunicação externa, rede ou persistência fora do diretório local.
+
+---
+
+## 7. Estrutura de Diretórios
 
 ```
-macro/
-│
-├── main.py            # Código principal
-├── config.json        # Configuração e scripts dos clientes
-└── README.md          # Documentação
+/Macro
+ ├─ main.py              # Código-fonte principal
+ ├─ config.json          # Configuração e scripts dos clientes
+ ├─ assets/
+ │   └─ icone.ico        # Ícone da aplicação
+ ├─ dist/
+ │   └─ Macro.exe        # Executável final
+ └─ installer/
+     └─ Setup.exe        # Instalador
 ```
 
 ---
 
-## 🧾 Estrutura do config.json
+## 8. Arquivo de Configuração (`config.json`)
+
+### 8.1 Finalidade
+
+Armazenar, de forma persistente:
+
+* Lista de clientes
+* Scripts associados a cada cliente
+
+### 8.2 Estrutura
 
 ```json
 {
   "clientes": {
     "cliente_1": {
-      "nome": "Cliente A",
-      "script": "pa.click(500, 300)\nsleep_seguro(2)"
-    },
-    "cliente_2": {
-      "nome": "Cliente B",
-      "script": "pa.click(800, 450)"
+      "nome": "Cliente Exemplo",
+      "script": "qtd = 3\nclick(100, 200)\nsleep(1)"
     }
   }
 }
 ```
 
----
+### 8.3 Observações Técnicas
 
-## ▶️ Como Executar
-
-1. Instale o Python 3.10+
-2. Instale as dependências:
-
-```bash
-pip install pyautogui keyboard
-```
-
-3. Execute o programa:
-
-```bash
-python main.py
-```
+* Formato JSON legível
+* Pode ser auditado e versionado
+* Não contém credenciais
+* Não executa código automaticamente sem ação do usuário
 
 ---
 
-## ✍️ Como Criar um Macro
+## 9. Linguagem de Script Interna
 
-### ❌ NÃO use
+Os scripts são escritos em Python simplificado, executados em **contexto controlado**.
+
+### 9.1 Funções Disponíveis
+
+| Função            | Descrição                      |
+| ----------------- | ------------------------------ |
+| `click(x, y)`     | Clique do mouse na posição X/Y |
+| `write(texto)`    | Digitação de texto             |
+| `press(tecla)`    | Pressionar tecla               |
+| `sleep(segundos)` | Pausa controlada               |
+| `qtd = N`         | Número de execuções            |
+
+### 9.2 Exemplo
 
 ```python
-time.sleep(2)
-```
+qtd = 3
 
-### ✅ USE
+click(590, 423)
+sleep(1)
 
-```python
-sleep_seguro(2)
-```
-
-### Exemplo completo
-
-```python
-pa.click(700, 400)
-sleep_seguro(2)
-
-esperar_se_pausado()
-pa.click(750, 450)
-sleep_seguro(1)
-```
-
-Isso garante:
-
-* Resposta imediata ao **STOP (F1)**
-* Funcionamento correto do **PAUSE (F2)**
-
----
-
-## 📍 Captura de Coordenadas
-
-1. Clique em **CDS**
-2. Posicione o mouse no local desejado
-3. Pressione **F8**
-4. O código será inserido automaticamente no editor
-
-```python
-pa.click(x, y)
+press("enter")
+write("Funcionando perfeitamente")
 ```
 
 ---
 
-## ⚠️ Observações Importantes
+## 10. Controle de Execução
 
-* O programa executa código Python dinamicamente (`exec`)
-* **Use apenas scripts confiáveis**
-* Evite loops infinitos sem `sleep_seguro()`
-
-
----
-
-## 👤 Autor
-
-Desenvolvido por **Jean Filho**
-Projeto focado em automação multi‑cliente com controle fino de execução.
+* Execução ocorre em **thread separada**, evitando travamento da interface
+* Botão **Stop** interrompe a execução
+* Tecla **ESC** encerra imediatamente qualquer automação
+* Sistema utiliza verificação contínua (`check()`) para parada segura
 
 ---
 
-## 📜 Licença
+## 11. Segurança e Conformidade
 
-Uso livre para fins educacionais e pessoais.
+### 11.1 O que o sistema NÃO faz
+
+* Não acessa banco de dados
+* Não coleta dados pessoais
+* Não se conecta à internet
+* Não injeta código em aplicações
+* Não modifica arquivos do sistema
+
+### 11.2 O que o sistema faz
+
+* Opera apenas sob comando
+* Pode ser interrompido a qualquer momento
+
+---
+
+## 12. Distribuição
+
+* Executável gerado via **PyInstaller**
+* Instalador criado com **Inno Setup**
+* Ícone e arquivos incluídos no pacote
+* Instalação padrão sem privilégios administrativos elevados
+
+---
+
+## 13. Manutenção e Suporte
+
+### 13.1 Atualizações
+
+* Atualizações podem ser feitas substituindo o executável
+* Scripts permanecem preservados no `config.json`
+
+### 13.2 Auditoria
+
+* Código-fonte disponível
+* Scripts legíveis
+* Comportamento previsível
+
+---
+
+## 14. Possíveis Evoluções Futuras
+
+* Atualizações automáticas
+
+---
+
+## 15. Autor
+
+**Jean Filho**
+
+Projeto desenvolvido para automação operacional e apresentação interna.
+
+---
+
+## 16. Observação Final
+
+Este sistema é uma **ferramenta de apoio** e deve ser utilizado conforme as políticas internas de TI.
