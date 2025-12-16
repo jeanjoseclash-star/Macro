@@ -16,6 +16,8 @@ cliente_atual_id = None
 pa.FAILSAFE = False
 pa.PAUSE = 0
 
+cds = False
+
 # ---------------- CONFIG ---------------- #
 
 def carregar_config():
@@ -29,6 +31,30 @@ def salvar_config():
         json.dump(config, f, ensure_ascii=False, indent=2)
 
 config = carregar_config()
+
+def ativar_cds():
+
+	global cds
+	cds = True
+	status_var.set(f"CDS Ativo Aperte (F8)")
+
+
+
+def confirmar_cds():
+	global cds
+	
+	if not cds:
+		return
+
+x, y = pa.position()
+linha = f"click({x}, {y})\n"
+
+editor.insert(tk.END,linha)
+editor.see(tk.END)
+
+cds = False
+
+status_var.set(f"Status: CDS Capturadas ({x}, {y})")
 
 # ---------------- CONTROLE ---------------- #
 
@@ -119,6 +145,13 @@ def listener_esc():
 
 threading.Thread(target=listener_esc, daemon=True).start()
 
+def listener_f8():
+	keyboard.on_press_key("f8", lambda e:
+	confirmar_cds()
+	keyboard.wait()
+
+threading.Thread(target=listener_f8, daemon=True).start()
+
 # ---------------- CLIENTES ---------------- #
 
 def listar_clientes():
@@ -172,6 +205,7 @@ btn_play.pack(side="left", padx=2)
 
 tk.Button(top, text="■ Stop", command=stop_global).pack(side="left", padx=2)
 tk.Button(top, text="💾 Salvar", command=salvar_codigo).pack(side="left", padx=2)
+tk.Button(top, text="CDS", command=ativar_cds).pack(side=""left", padx=2)
 tk.Button(top, text="➕ Novo", command=novo_cliente).pack(side="left", padx=2)
 
 cliente_var = tk.StringVar()
@@ -190,3 +224,4 @@ editor = scrolledtext.ScrolledText(janela)
 editor.pack(expand=True, fill="both")
 
 janela.mainloop()
+
