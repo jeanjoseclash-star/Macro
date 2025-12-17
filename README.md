@@ -1,8 +1,8 @@
-# Macro by Jean
+# Macro
 
 ## 1. Visão Geral
 
-O **Macro by Jean** é uma aplicação desktop desenvolvida em Python, com interface gráfica baseada em **Tkinter**, destinada à automação de tarefas repetitivas por meio da simulação de ações humanas (mouse e teclado).
+O **Macro** é uma aplicação desktop desenvolvida em Python, com interface gráfica baseada em **Tkinter**, destinada à automação de tarefas repetitivas por meio da simulação de ações humanas (mouse e teclado).
 
 O software foi projetado como **ferramenta de apoio operacional**, sem integração direta com sistemas corporativos, banco de dados ou APIs internas, garantindo baixo risco técnico e fácil auditoria.
 
