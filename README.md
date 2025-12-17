@@ -1,213 +1,227 @@
-# Macro
+Macro – Automação com Interface Gráfica (Tkinter)
 
-## 1. Visão Geral
+Aplicação desktop em Python para criação, gerenciamento e execução de macros de automação de teclado e mouse, com interface gráfica simples, suporte a múltiplos clientes e persistência de scripts.
 
-O **Macro** é uma aplicação desktop desenvolvida em Python, com interface gráfica baseada em **Tkinter**, destinada à automação de tarefas repetitivas por meio da simulação de ações humanas (mouse e teclado).
-
-O software foi projetado como **ferramenta de apoio operacional**, sem integração direta com sistemas corporativos, banco de dados ou APIs internas, garantindo baixo risco técnico e fácil auditoria.
 
 ---
 
-## 2. Objetivo do Sistema
+Visão Geral
 
-* Automatizar tarefas manuais repetitivas
-* Reduzir tempo operacional
-* Minimizar erros humanos
-* Padronizar execuções por cliente/processo
-* Permitir controle total da execução
+O Macro é uma ferramenta voltada à automação de tarefas repetitivas em ambientes desktop. Utiliza Tkinter para a interface gráfica, PyAutoGUI para automação de mouse/teclado e keyboard para atalhos globais. Cada cliente possui seu próprio script, armazenado localmente em um arquivo JSON.
 
----
+Principais características:
 
-## 3. Público-Alvo
+Editor integrado para scripts de automação
 
-* Usuários operacionais
-* Supervisores de processo
-* Equipe de Tecnologia da Informação (TI)
+Execução controlada (Play / Stop)
 
----
+Captura de coordenadas de tela (CDS)
 
-## 4. Funcionalidades Principais
+Suporte a múltiplos clientes
 
-* Interface gráfica simples e intuitiva
-* Cadastro e seleção de múltiplos clientes
-* Scripts independentes por cliente
-* Execução controlada por quantidade de ciclos (`qtd`)
-* Barra de progresso visual
-* Salvamento automático de scripts
-* Interrupção manual por botão
-* Interrupção global imediata via tecla **ESC**
-* Persistência de dados em arquivo JSON
-* Distribuição via executável e instalador
+Barra de progresso e status de execução
+
+Interrupção global via tecla ESC
+
+
 
 ---
 
-## 5. Tecnologias Utilizadas
+Requisitos
 
-* **Python 3.x**
-* **Tkinter** – Interface gráfica
-* **PyAutoGUI** – Automação de mouse e teclado
-* **Keyboard** – Captura global de teclas
-* **JSON** – Persistência de configuração
-* **PyInstaller** – Geração de executável
-* **Inno Setup** – Criação do instalador
+Python 3.8 ou superior
 
----
+Sistema operacional Windows
 
-## 6. Arquitetura do Sistema
 
-### 6.1 Arquitetura Geral
+Bibliotecas Python
 
-O sistema opera inteiramente em **modo local**, seguindo o fluxo:
+pip install pyautogui keyboard
 
-1. Inicialização da interface gráfica
-2. Leitura do arquivo `config.json`
-3. Seleção do cliente
-4. Execução do script no contexto controlado
-5. Monitoramento e interrupção sob demanda
+As bibliotecas abaixo fazem parte da biblioteca padrão do Python:
 
-Não há comunicação externa, rede ou persistência fora do diretório local.
+tkinter
 
----
+threading
 
-## 7. Estrutura de Diretórios
+json
 
-```
-/Macro
- ├─ main.py              # Código-fonte principal
- ├─ config.json          # Configuração e scripts dos clientes
- ├─ assets/
- │   └─ icone.ico        # Ícone da aplicação
- ├─ dist/
- │   └─ Macro.exe        # Executável final
- └─ installer/
-     └─ Setup.exe        # Instalador
-```
+os
+
+sys
+
+time
+
+
 
 ---
 
-## 8. Arquivo de Configuração (`config.json`)
+Estrutura de Arquivos
 
-### 8.1 Finalidade
+.
+├── main.py            # Arquivo principal da aplicação
+├── config.json        # Armazena clientes e scripts (gerado automaticamente)
+└── README.md          # Documentação
 
-Armazenar, de forma persistente:
 
-* Lista de clientes
-* Scripts associados a cada cliente
+---
 
-### 8.2 Estrutura
+Como Executar
 
-```json
+python main.py
+
+Ao iniciar:
+
+1. Crie um novo cliente clicando em Novo
+
+
+2. Selecione o cliente no combo box
+
+
+3. Escreva ou cole o script no editor
+
+
+4. Clique em Salvar
+
+
+5. Execute com Play
+
+
+
+
+---
+
+Interface e Controles
+
+Botões
+
+▶ Play: Executa o script do cliente selecionado
+
+■ Stop: Interrompe imediatamente a execução
+
+Salvar: Salva o script atual no config.json
+
+CDS: Ativa o modo de captura de coordenadas do mouse
+
+Novo: Cria um novo cliente
+
+
+Atalhos Globais
+
+ESC → Interrompe a execução do script
+
+F8 → Confirma a captura de coordenadas (CDS)
+
+
+
+---
+
+Modo CDS (Captura de Coordenadas)
+
+O modo CDS facilita a obtenção de coordenadas da tela:
+
+1. Clique em CDS
+
+
+2. Posicione o mouse no local desejado
+
+
+3. Pressione F8
+
+
+4. A linha click(x, y) será inserida automaticamente no editor
+
+
+
+
+---
+
+Linguagem de Script (API Disponível)
+
+Os scripts são escritos em Python e executados via exec, com acesso controlado às funções abaixo:
+
+Funções
+
+click(x, y)            # Clique do mouse na posição (x, y)
+write(texto, interval=0.05)  # Digita um texto
+press(tecla)           # Pressiona uma tecla
+sleep(segundos)        # Aguarda respeitando o controle de parada
+esperar_estavel(x, y, tentativas=5, intervalo=0.5)  # Clique repetido
+
+Variável Especial
+
+qtd = 5  # Quantidade de repetições do script
+
+Se qtd não for definida, o script será executado apenas uma vez.
+
+
+---
+
+Exemplo de Script
+
+qtd = 3
+
+click(500, 300)
+sleep(1)
+write("Olá mundo")
+press("enter")
+
+
+---
+
+Persistência de Dados
+
+Os dados são armazenados em config.json no formato:
+
 {
   "clientes": {
     "cliente_1": {
       "nome": "Cliente Exemplo",
-      "script": "qtd = 3\nclick(100, 200)\nsleep(1)"
+      "script": "click(100, 200)"
     }
   }
 }
-```
 
-### 8.3 Observações Técnicas
-
-* Formato JSON legível
-* Pode ser auditado e versionado
-* Não contém credenciais
-* Não executa código automaticamente sem ação do usuário
 
 ---
 
-## 9. Linguagem de Script Interna
+Encerramento Seguro
 
-Os scripts são escritos em Python simplificado, executados em **contexto controlado**.
+A execução é monitorada por uma flag interna (executando)
 
-### 9.1 Funções Disponíveis
+Qualquer chamada respeita a função check()
 
-| Função            | Descrição                      |
-| ----------------- | ------------------------------ |
-| `click(x, y)`     | Clique do mouse na posição X/Y |
-| `write(texto)`    | Digitação de texto             |
-| `press(tecla)`    | Pressionar tecla               |
-| `sleep(segundos)` | Pausa controlada               |
-| `qtd = N`         | Número de execuções            |
+Pressionar ESC encerra imediatamente a macro em execução
 
-### 9.2 Exemplo
 
-```python
-qtd = 3
-
-click(590, 423)
-sleep(1)
-
-press("enter")
-write("Funcionando perfeitamente")
-```
 
 ---
 
-## 10. Controle de Execução
+Observações Importantes
 
-* Execução ocorre em **thread separada**, evitando travamento da interface
-* Botão **Stop** interrompe a execução
-* Tecla **ESC** encerra imediatamente qualquer automação
-* Sistema utiliza verificação contínua (`check()`) para parada segura
+O pyautogui.FAILSAFE está desativado
 
----
+Utilize com cautela, especialmente em ambientes produtivos
 
-## 11. Segurança e Conformidade
+Não execute macros sem supervisão
 
-### 11.1 O que o sistema NÃO faz
 
-* Não acessa banco de dados
-* Não coleta dados pessoais
-* Não se conecta à internet
-* Não injeta código em aplicações
-* Não modifica arquivos do sistema
-
-### 11.2 O que o sistema faz
-
-* Opera apenas sob comando
-* Pode ser interrompido a qualquer momento
 
 ---
 
-## 12. Distribuição
+Compilação para Executável (Opcional)
 
-* Executável gerado via **PyInstaller**
-* Instalador criado com **Inno Setup**
-* Ícone e arquivos incluídos no pacote
-* Instalação padrão sem privilégios administrativos elevados
+Recomendado o uso do PyInstaller:
 
----
+pip install pyinstaller
+pyinstaller --onefile --noconsole main.py
 
-## 13. Manutenção e Suporte
+O executável será gerado na pasta dist/.
 
-### 13.1 Atualizações
-
-* Atualizações podem ser feitas substituindo o executável
-* Scripts permanecem preservados no `config.json`
-
-### 13.2 Auditoria
-
-* Código-fonte disponível
-* Scripts legíveis
-* Comportamento previsível
 
 ---
 
-## 14. Possíveis Evoluções Futuras
+Autor
 
-* Atualizações automáticas
-
----
-
-## 15. Autor
-
-**Jean Filho**
-
-Projeto desenvolvido para automação operacional e apresentação interna.
-
----
-
-## 16. Observação Final
-
-Este sistema é uma **ferramenta de apoio** e deve ser utilizado conforme as políticas internas de TI.
+Jean
+© 2025 – Macro
