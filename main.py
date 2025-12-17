@@ -7,7 +7,6 @@ import sys
 import pyautogui as pa
 import time
 import keyboard
-# ---------------- VARIÁVEIS GLOBAIS ---------------- #
 
 CONFIG_ARQUIVO = "config.json"
 
@@ -18,8 +17,6 @@ pa.FAILSAFE = False
 pa.PAUSE = 0
 
 cds = False
-
-# ---------------- CONFIG ---------------- #
 
 def carregar_config():
     if not os.path.exists(CONFIG_ARQUIVO):
@@ -53,8 +50,6 @@ def confirmar_cds():
     cds = False
     status_var.set(f"Status: CDS Capturadas ({x}, {y})")
 
-# ---------------- CONTROLE ---------------- #
-
 def check():
     if not executando:
         raise SystemExit
@@ -76,8 +71,6 @@ def write(texto, interval=0.05):
 def press(tecla):
     check()
     pa.press(tecla)
-
-# ---------------- EXECUÇÃO ---------------- #
 
 def executar_tarefa():
     global executando
@@ -136,9 +129,6 @@ def esperar_estavel(x, y, tentativas=5, intervalo=0.5):
         pa.click(x, y)
         time.sleep(intervalo)
 
-
-# ---------------- STOP GLOBAL ---------------- #
-
 def stop_global():
     global executando
     executando = False
@@ -155,8 +145,6 @@ def listener_f8():
     keyboard.wait()
 
 threading.Thread(target=listener_f8, daemon=True).start()
-
-# ---------------- CLIENTES ---------------- #
 
 def listar_clientes():
     return [f"{d['nome']} ({cid})" for cid, d in config["clientes"].items()]
@@ -186,8 +174,6 @@ def salvar_codigo():
         config["clientes"][cliente_atual_id]["script"] = editor.get("1.0", "end-1c")
         salvar_config()
 
-# ---------------- INTERFACE ---------------- #
-
 def caminho_recurso(nome):
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, nome)
@@ -203,7 +189,7 @@ footer.pack(side="bottom", fill="x")
 
 footer_label = tk.Label(
     footer,
-    text="© 2025 Macro App by Jean",
+    text="© 2025 Macro by Jean",
     font=("Arial", 8),
     fg="gray"
 )
@@ -216,9 +202,9 @@ btn_play = tk.Button(top, text="▶ Play", command=executar_tarefa)
 btn_play.pack(side="left", padx=2)
 
 tk.Button(top, text="■ Stop", command=stop_global).pack(side="left", padx=2)
-tk.Button(top, text="💾 Salvar", command=salvar_codigo).pack(side="left", padx=2)
+tk.Button(top, text="Salvar", command=salvar_codigo).pack(side="left", padx=2)
 tk.Button(top, text="CDS", command=ativar_cds).pack(side="left", padx=2)
-tk.Button(top, text="➕ Novo", command=novo_cliente).pack(side="left", padx=2)
+tk.Button(top, text="Novo", command=novo_cliente).pack(side="left", padx=2)
 
 cliente_var = tk.StringVar()
 combo = ttk.Combobox(
