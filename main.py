@@ -205,7 +205,7 @@ btn_play.pack(side="left", padx=2)
 
 tk.Button(top, text="■ Stop", command=stop_global).pack(side="left", padx=2)
 tk.Button(top, text="💾 Salvar", command=salvar_codigo).pack(side="left", padx=2)
-tk.Button(top, text="CDS", command=ativar_cds).pack(side=""left", padx=2)
+tk.Button(top, text="CDS", command=ativar_cds).pack(side="left", padx=2)
 tk.Button(top, text="➕ Novo", command=novo_cliente).pack(side="left", padx=2)
 
 cliente_var = tk.StringVar()
@@ -224,4 +224,5 @@ editor = scrolledtext.ScrolledText(janela)
 editor.pack(expand=True, fill="both")
 
 janela.mainloop()
+
 
