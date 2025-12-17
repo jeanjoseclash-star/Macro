@@ -7,6 +7,7 @@ import sys
 import pyautogui as pa
 import time
 import keyboard
+# ---------------- VARIÁVEIS GLOBAIS ---------------- #
 
 CONFIG_ARQUIVO = "config.json"
 
@@ -33,28 +34,24 @@ def salvar_config():
 config = carregar_config()
 
 def ativar_cds():
-
-	global cds
-	cds = True
-	status_var.set(f"CDS Ativo Aperte (F8)")
-
-
+    global cds
+    cds = True
+    status_var.set("CDS Ativo - Aperte (F8)")
 
 def confirmar_cds():
-	global cds
-	
-	if not cds:
-		return
+    global cds
 
-x, y = pa.position()
-linha = f"click({x}, {y})\n"
+    if not cds:
+        return
 
-editor.insert(tk.END,linha)
-editor.see(tk.END)
+    x, y = pa.position()
+    linha = f"click({x}, {y})\n"
 
-cds = False
+    editor.insert(tk.END, linha)
+    editor.see(tk.END)
 
-status_var.set(f"Status: CDS Capturadas ({x}, {y})")
+    cds = False
+    status_var.set(f"Status: CDS Capturadas ({x}, {y})")
 
 # ---------------- CONTROLE ---------------- #
 
@@ -89,7 +86,7 @@ def executar_tarefa():
         return
 
     executando = True
-    btn_play.config(text="⏵ Play", bg="#2ecc71", fg="white", state="disabled")
+    btn_play.config(text="▶ Executando", state="disabled")
     status_var.set("Status: Executando")
 
     codigo = editor.get("1.0", "end-1c")
@@ -102,6 +99,7 @@ def executar_tarefa():
             "write": write,
             "press": press,
             "sleep": sleep,
+            "esperar_estavel": esperar_estavel,
             "qtd": 1
         }
 
@@ -128,11 +126,18 @@ def executar_tarefa():
             print("Erro no script:", e)
 
         executando = False
-        btn_play.config(text="▶ Play", bg="SystemButtonFace", fg="black", state="normal")
+        btn_play.config(text="▶ Play", state="normal")
 
     threading.Thread(target=run, daemon=True).start()
+    
+def esperar_estavel(x, y, tentativas=5, intervalo=0.5):
+    for _ in range(tentativas):
+        check()
+        pa.click(x, y)
+        time.sleep(intervalo)
 
-# ---------------- STOP GLOBAL (ESC) ---------------- #
+
+# ---------------- STOP GLOBAL ---------------- #
 
 def stop_global():
     global executando
@@ -146,9 +151,8 @@ def listener_esc():
 threading.Thread(target=listener_esc, daemon=True).start()
 
 def listener_f8():
-	keyboard.on_press_key("f8", lambda e:
-	confirmar_cds()
-	keyboard.wait()
+    keyboard.on_press_key("f8", lambda e: confirmar_cds())
+    keyboard.wait()
 
 threading.Thread(target=listener_f8, daemon=True).start()
 
@@ -170,7 +174,7 @@ def novo_cliente():
     nome = simpledialog.askstring("Novo cliente", "Nome do cliente:")
     if not nome:
         return
-    cid = f"cliente_{len(config['clientes'])+1}"
+    cid = f"cliente_{len(config['clientes']) + 1}"
     config["clientes"][cid] = {"nome": nome, "script": ""}
     salvar_config()
     combo["values"] = listar_clientes()
@@ -189,13 +193,21 @@ def caminho_recurso(nome):
         return os.path.join(sys._MEIPASS, nome)
     return os.path.join(os.path.abspath("."), nome)
 
-
-
 janela = tk.Tk()
-janela.title("Macro by Jean")
+janela.title("Macro")
 janela.geometry("360x500")
+#janela.iconbitmap(caminho_recurso("icone.ico"))
 
-janela.iconbitmap(caminho_recurso("icone.ico"))
+footer = tk.Frame(janela, bd=1, relief="sunken")
+footer.pack(side="bottom", fill="x")
+
+footer_label = tk.Label(
+    footer,
+    text="© 2025 Macro App by Jean",
+    font=("Arial", 8),
+    fg="gray"
+)
+footer_label.pack(pady=2)
 
 top = tk.Frame(janela)
 top.pack(fill="x")
@@ -209,8 +221,13 @@ tk.Button(top, text="CDS", command=ativar_cds).pack(side="left", padx=2)
 tk.Button(top, text="➕ Novo", command=novo_cliente).pack(side="left", padx=2)
 
 cliente_var = tk.StringVar()
-combo = ttk.Combobox(top, textvariable=cliente_var, values=listar_clientes(),
-                     state="readonly", width=30)
+combo = ttk.Combobox(
+    top,
+    textvariable=cliente_var,
+    values=listar_clientes(),
+    state="readonly",
+    width=30
+)
 combo.pack(side="left", padx=5)
 combo.bind("<<ComboboxSelected>>", selecionar_cliente)
 
@@ -224,5 +241,3 @@ editor = scrolledtext.ScrolledText(janela)
 editor.pack(expand=True, fill="both")
 
 janela.mainloop()
-
-
