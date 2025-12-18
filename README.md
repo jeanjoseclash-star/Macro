@@ -29,14 +29,14 @@ Interrupção global via tecla ESC
 
 Requisitos
 
-Python 3.8 ou superior
-
-Sistema operacional Windows
+Sistema operacional Windows 7 ou superior
 
 
 Bibliotecas Python
 
-pip install pyautogui keyboard
+pyautogui
+
+keyboard
 
 As bibliotecas abaixo fazem parte da biblioteca padrão do Python:
 
@@ -68,7 +68,7 @@ Estrutura de Arquivos
 
 Como Executar
 
-python main.py
+Abri o Executavel Macro.exe
 
 Ao iniciar:
 
