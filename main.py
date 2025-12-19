@@ -7,7 +7,6 @@ import sys
 import pyautogui as pa
 import time
 import keyboard
-# ---------------- VARIÁVEIS GLOBAIS ---------------- #
 
 CONFIG_ARQUIVO = "config.json"
 
@@ -18,8 +17,6 @@ pa.FAILSAFE = False
 pa.PAUSE = 0
 
 cds = False
-
-# ---------------- CONFIG ---------------- #
 
 def carregar_config():
     if not os.path.exists(CONFIG_ARQUIVO):
@@ -40,20 +37,15 @@ def ativar_cds():
 
 def confirmar_cds():
     global cds
-
     if not cds:
         return
 
     x, y = pa.position()
-    linha = f"click({x}, {y})\n"
-
-    editor.insert(tk.END, linha)
+    editor.insert(tk.END, f"click({x}, {y})\n")
     editor.see(tk.END)
 
     cds = False
     status_var.set(f"Status: CDS Capturadas ({x}, {y})")
-
-# ---------------- CONTROLE ---------------- #
 
 def check():
     if not executando:
@@ -77,7 +69,11 @@ def press(tecla):
     check()
     pa.press(tecla)
 
-# ---------------- EXECUÇÃO ---------------- #
+def esperar_estavel(x, y, tentativas=5, intervalo=0.5):
+    for _ in range(tentativas):
+        check()
+        pa.click(x, y)
+        time.sleep(intervalo)
 
 def executar_tarefa():
     global executando
@@ -90,23 +86,11 @@ def executar_tarefa():
     status_var.set("Status: Executando")
 
     codigo = editor.get("1.0", "end-1c")
+    qtd = qtd_var.get()
 
     def run():
         global executando
-
-        contexto = {
-            "click": click,
-            "write": write,
-            "press": press,
-            "sleep": sleep,
-            "esperar_estavel": esperar_estavel,
-            "qtd": 1
-        }
-
         try:
-            exec(codigo, contexto)
-            qtd = int(contexto.get("qtd", 1))
-
             progress["maximum"] = qtd
             progress["value"] = 0
 
@@ -114,7 +98,19 @@ def executar_tarefa():
                 check()
                 progress["value"] = i + 1
                 status_var.set(f"Status: Executando ({i+1}/{qtd})")
-                exec(codigo, contexto)
+
+                exec(codigo, {
+                    "click": click,
+                    "write": write,
+                    "press": press,
+                    "sleep": sleep,
+                    "esperar_estavel": esperar_estavel,
+
+                    "clique": click,
+                    "escreva": write,
+                    "aperte": press,
+                    "espere": sleep
+                })
 
             status_var.set("Status: Finalizado")
 
@@ -126,18 +122,9 @@ def executar_tarefa():
             print("Erro no script:", e)
 
         executando = False
-        btn_play.config(text="▶ Play", state="normal")
+        btn_play.config(text="Play", state="normal")
 
     threading.Thread(target=run, daemon=True).start()
-    
-def esperar_estavel(x, y, tentativas=5, intervalo=0.5):
-    for _ in range(tentativas):
-        check()
-        pa.click(x, y)
-        time.sleep(intervalo)
-
-
-# ---------------- STOP GLOBAL ---------------- #
 
 def stop_global():
     global executando
@@ -156,19 +143,18 @@ def listener_f8():
 
 threading.Thread(target=listener_f8, daemon=True).start()
 
-# ---------------- CLIENTES ---------------- #
-
 def listar_clientes():
-    return [f"{d['nome']} ({cid})" for cid, d in config["clientes"].items()]
+    return [d["nome"] for d in config["clientes"].values()]
 
 def selecionar_cliente(event=None):
     global cliente_atual_id
-    valor = cliente_var.get()
-    if not valor:
-        return
-    cliente_atual_id = valor.split("(")[-1].replace(")", "")
-    editor.delete("1.0", "end")
-    editor.insert("1.0", config["clientes"][cliente_atual_id]["script"])
+    nome = cliente_var.get()
+    for cid, dados in config["clientes"].items():
+        if dados["nome"] == nome:
+            cliente_atual_id = cid
+            editor.delete("1.0", "end")
+            editor.insert("1.0", dados["script"])
+            break
 
 def novo_cliente():
     nome = simpledialog.askstring("Novo cliente", "Nome do cliente:")
@@ -178,15 +164,13 @@ def novo_cliente():
     config["clientes"][cid] = {"nome": nome, "script": ""}
     salvar_config()
     combo["values"] = listar_clientes()
-    cliente_var.set(f"{nome} ({cid})")
+    cliente_var.set(nome)
     selecionar_cliente()
 
 def salvar_codigo():
     if cliente_atual_id:
         config["clientes"][cliente_atual_id]["script"] = editor.get("1.0", "end-1c")
         salvar_config()
-
-# ---------------- INTERFACE ---------------- #
 
 def caminho_recurso(nome):
     if hasattr(sys, "_MEIPASS"):
@@ -195,42 +179,28 @@ def caminho_recurso(nome):
 
 janela = tk.Tk()
 janela.title("Macro")
-janela.geometry("360x500")
+janela.geometry("360x520")
 
 logo = tk.PhotoImage(file=caminho_recurso("assets/icon.png"))
 janela.iconphoto(True, logo)
 
-
-footer = tk.Frame(janela, bd=1, relief="sunken")
-footer.pack(side="bottom", fill="x")
-
-footer_label = tk.Label(
-    footer,
-    text="© 2025 Macro App by Jean",
-    font=("Arial", 8),
-    fg="gray"
-)
-footer_label.pack(pady=2)
-
 top = tk.Frame(janela)
 top.pack(fill="x")
 
-btn_play = tk.Button(top, text="▶ Play", command=executar_tarefa)
-btn_play.pack(side="left", padx=2)
+btn_play = tk.Button(top, text="Play", command=executar_tarefa)
+btn_play.pack(side="left", padx=1.5)
 
-tk.Button(top, text="■ Stop", command=stop_global).pack(side="left", padx=2)
-tk.Button(top, text="💾 Salvar", command=salvar_codigo).pack(side="left", padx=2)
-tk.Button(top, text="CDS", command=ativar_cds).pack(side="left", padx=2)
-tk.Button(top, text="➕ Novo", command=novo_cliente).pack(side="left", padx=2)
+tk.Button(top, text="Stop", command=stop_global).pack(side="left", padx=1.5)
+tk.Button(top, text="Salvar", command=salvar_codigo).pack(side="left", padx=1.5)
+tk.Button(top, text="CDS", command=ativar_cds).pack(side="left", padx=1.5)
+tk.Button(top, text="Novo", command=novo_cliente).pack(side="left", padx=1.5)
+
+qtd_var = tk.IntVar(value=1)
+tk.Label(top, text="Qtd:").pack(side="left", padx=(8, 1.5))
+tk.Spinbox(top, from_=1, to=999, width=5, textvariable=qtd_var).pack(side="left")
 
 cliente_var = tk.StringVar()
-combo = ttk.Combobox(
-    top,
-    textvariable=cliente_var,
-    values=listar_clientes(),
-    state="readonly",
-    width=30
-)
+combo = ttk.Combobox(top, textvariable=cliente_var, values=listar_clientes(), state="readonly", width=15)
 combo.pack(side="left", padx=5)
 combo.bind("<<ComboboxSelected>>", selecionar_cliente)
 
@@ -242,5 +212,10 @@ progress.pack(fill="x", padx=5, pady=5)
 
 editor = scrolledtext.ScrolledText(janela)
 editor.pack(expand=True, fill="both")
+
+footer = tk.Frame(janela, bd=1, relief="sunken")
+footer.pack(side="bottom", fill="x")
+
+tk.Label(footer, text="© 2025 Macro by Jean", font=("Arial", 8), fg="gray").pack(pady=2)
 
 janela.mainloop()
