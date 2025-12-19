@@ -1,0 +1,48 @@
+COMO USAR O MACRO.EXE – PASSO A PASSO
+
+1. O QUE É O MACRO.EXE
+O Macro.exe é um programa de automação que executa ações de mouse e teclado automaticamente, com base em scripts criados pelo usuário.
+
+2. CRIAR UM CLIENTE
+Clique em ➕ Novo, informe o nome e confirme.
+
+3. COMANDOS DISPONÍVEIS
+click(x, y)  -> Clica na posição da tela
+write("texto") -> Digita texto
+press("ENTER") -> Pressiona uma tecla
+sleep(segundos) -> Aguarda tempo
+esperar_estavel(x, y, tentativas, intervalo) -> Clique repetido
+
+click / clique
+
+write / escreva
+
+press / aperte
+
+sleep / espere
+
+Exemplo:
+click(421, 1059)
+sleep(0.5)
+write("www.youtube.com")
+press("ENTER")
+
+Exemplo:
+clique(421, 1059)
+espere(0.5)
+escreva("www.youtube.com")
+aperte("ENTER")
+
+4. CAPTURAR COORDENADAS
+Clique em CDS, posicione o mouse e pressione F8.
+
+5. SALVAR
+Clique em 💾 Salvar.
+
+6. EXECUTAR
+Clique em ▶ Play.
+
+7. PARAR
+Clique em ■ Stop ou pressione ESC.
+
+© 2025 – Macro by Jean
