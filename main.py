@@ -17,6 +17,12 @@ pa.FAILSAFE = False
 pa.PAUSE = 0
 
 cds = False
+wait_mode = False
+
+def log(msg):
+    ts = time.strftime("%H:%M:%S")
+    print(f"[{ts}] {msg}")
+
 
 def carregar_config():
     if not os.path.exists(CONFIG_ARQUIVO):
@@ -29,6 +35,36 @@ def salvar_config():
         json.dump(config, f, ensure_ascii=False, indent=2)
 
 config = carregar_config()
+
+def ativar_wait():
+    global wait_mode
+    wait_mode = True
+    status_var.set("WAIT Ativo - Aperte (F8)")
+
+
+def confirmar_wait():
+    global wait_mode
+
+    if not wait_mode:
+        return
+
+    x, y = pa.position()
+
+    # Afasta o mouse para não interferir
+    pa.moveRel(15, 15)
+    time.sleep(0.2)
+
+    cor = pa.pixel(x, y)
+
+    log(f"WAIT CAPTURADO -> pos=({x},{y}) cor={cor}")
+
+    editor.insert(tk.END, f"wait({x}, {y})\n")
+    editor.see(tk.END)
+
+    wait_mode = False
+    status_var.set(f"Status: WAIT capturado ({x}, {y}) {cor}")
+
+
 
 def ativar_cds():
     global cds
@@ -52,28 +88,85 @@ def check():
         raise SystemExit
 
 def sleep(segundos):
+    log(f"SLEEP -> {segundos}s")
     inicio = time.time()
     while time.time() - inicio < segundos:
         check()
         time.sleep(0.01)
 
+
 def click(x, y):
+    log(f"CLICK -> ({x}, {y})")
     check()
     pa.click(x, y)
 
+
 def write(texto, interval=0.05):
+    log(f"WRITE -> '{texto}'")
     check()
     pa.write(texto, interval=interval)
 
+
 def press(tecla):
+    log(f"PRESS -> {tecla}")
     check()
     pa.press(tecla)
 
-def esperar_estavel(x, y, tentativas=5, intervalo=0.5):
-    for _ in range(tentativas):
+
+def wait(x, y, tolerancia=3, ciclos_estavel=5, intervalo=0.3):
+    """
+    Aguarda até que o pixel em (x, y) fique ESTÁVEL por N ciclos consecutivos.
+    Ideal para YouTube / vídeos / loading.
+    """
+    ultimo = None
+    estavel = 0
+    ciclo = 0
+
+    log(f"WAIT ESTAVEL INICIO -> pos=({x},{y}) tol={tolerancia} ciclos={ciclos_estavel}")
+
+    while True:
         check()
-        pa.click(x, y)
+        ciclo += 1
+
+        atual = pa.pixel(x, y)
+
+        if ultimo is not None:
+            dr = abs(atual[0] - ultimo[0])
+            dg = abs(atual[1] - ultimo[1])
+            db = abs(atual[2] - ultimo[2])
+
+            variacao = max(dr, dg, db)
+
+            if variacao <= tolerancia:
+                estavel += 1
+            else:
+                estavel = 0
+
+            log(
+                f"WAIT CICLO {ciclo} -> "
+                f"RGB={atual} Δmax={variacao} "
+                f"estavel={estavel}/{ciclos_estavel}"
+            )
+
+            if estavel >= ciclos_estavel:
+                log("WAIT LIBERADO -> pixel estabilizou")
+                return
+
+        else:
+            log(f"WAIT CICLO {ciclo} -> RGB={atual} (primeira leitura)")
+
+        ultimo = atual
         time.sleep(intervalo)
+        
+def destacar_linha(numero_linha):
+    editor.tag_remove("linha_exec", "1.0", "end")
+
+    inicio = f"{numero_linha}.0"
+    fim = f"{numero_linha}.end"
+
+    editor.tag_add("linha_exec", inicio, fim)
+    editor.see(inicio)
+
 
 def executar_tarefa():
     global executando
@@ -94,24 +187,42 @@ def executar_tarefa():
             progress["maximum"] = qtd
             progress["value"] = 0
 
+            linhas = codigo.splitlines()
+
+            ambiente = {
+                "click": click,
+                "write": write,
+                "press": press,
+                "sleep": sleep,
+                "wait": wait,
+
+                "clique": click,
+                "escreva": write,
+                "aperte": press,
+                "espere": sleep,
+                "aguarde": wait
+            }
+
             for i in range(qtd):
                 check()
                 progress["value"] = i + 1
                 status_var.set(f"Status: Executando ({i+1}/{qtd})")
+                log(f"EXECUTANDO SCRIPT -> Iteração {i+1}/{qtd}")
 
-                exec(codigo, {
-                    "click": click,
-                    "write": write,
-                    "press": press,
-                    "sleep": sleep,
-                    "esperar_estavel": esperar_estavel,
+                for num_linha, linha in enumerate(linhas, start=1):
+                    check()
 
-                    "clique": click,
-                    "escreva": write,
-                    "aperte": press,
-                    "espere": sleep
-                })
+                    if not linha.strip():
+                        continue
 
+                    # Destaque visual da linha em execução
+                    janela.after(0, destacar_linha, num_linha)
+
+                    log(f"EXEC LINHA {num_linha} -> {linha.strip()}")
+
+                    exec(linha, ambiente)
+
+            log("SCRIPT FINALIZADO COM SUCESSO")
             status_var.set("Status: Finalizado")
 
         except SystemExit:
@@ -119,12 +230,13 @@ def executar_tarefa():
 
         except Exception as e:
             status_var.set("Status: Erro")
-            print("Erro no script:", e)
+            log(f"ERRO -> {e}")
 
         executando = False
         btn_play.config(text="Play", state="normal")
 
     threading.Thread(target=run, daemon=True).start()
+
 
 def stop_global():
     global executando
@@ -138,8 +250,15 @@ def listener_esc():
 threading.Thread(target=listener_esc, daemon=True).start()
 
 def listener_f8():
-    keyboard.on_press_key("f8", lambda e: confirmar_cds())
+    def handler(e):
+        if cds:
+            confirmar_cds()
+        elif wait_mode:
+            confirmar_wait()
+
+    keyboard.on_press_key("f8", handler)
     keyboard.wait()
+
 
 threading.Thread(target=listener_f8, daemon=True).start()
 
@@ -179,7 +298,7 @@ def caminho_recurso(nome):
 
 janela = tk.Tk()
 janela.title("Macro")
-janela.geometry("360x520")
+janela.geometry("380x540")
 
 logo = tk.PhotoImage(file=caminho_recurso("assets/icon.png"))
 janela.iconphoto(True, logo)
@@ -193,6 +312,7 @@ btn_play.pack(side="left", padx=1.5)
 tk.Button(top, text="Stop", command=stop_global).pack(side="left", padx=1.5)
 tk.Button(top, text="Salvar", command=salvar_codigo).pack(side="left", padx=1.5)
 tk.Button(top, text="CDS", command=ativar_cds).pack(side="left", padx=1.5)
+tk.Button(top, text="Wait", command=ativar_wait).pack(side="left", padx=1.5)
 tk.Button(top, text="Novo", command=novo_cliente).pack(side="left", padx=1.5)
 
 qtd_var = tk.IntVar(value=1)
@@ -212,6 +332,12 @@ progress.pack(fill="x", padx=5, pady=5)
 
 editor = scrolledtext.ScrolledText(janela)
 editor.pack(expand=True, fill="both")
+editor.tag_configure(
+    "linha_exec",
+    background="#2b2b2b",
+    foreground="#00ff9c"
+)
+
 
 footer = tk.Frame(janela, bd=1, relief="sunken")
 footer.pack(side="bottom", fill="x")
