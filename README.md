@@ -59,7 +59,6 @@ O editor aceita comandos simples, linha por linha.
 
 ### Comandos disponíveis
 
-```text
 click(x, y)
 write("texto")
 press("enter")
@@ -67,16 +66,15 @@ sleep(segundos)
 wait(x, y)
 Também disponíveis em português:
 
-text
-Copiar código
 clique(x, y)
 escreva("texto")
 aperte("enter")
 espere(segundos)
 aguarde(x, y)
+
 Exemplo de Script
 python
-Copiar código
+
 click(500, 300)
 sleep(1)
 write("youtube.com")
@@ -108,8 +106,6 @@ F8	Confirmar CDS ou WAIT
 ESC	Interromper execução do macro
 
 📂 Estrutura do Projeto
-text
-Copiar código
 Macro/
 ├── main.py
 ├── config.json
@@ -128,23 +124,6 @@ PyAutoGUI
 Keyboard
 
 PyInstaller
-
-📦 Geração do Executável (.exe)
-O projeto pode ser empacotado em um único executável usando PyInstaller.
-
-Comando utilizado:
-powershell
-Copiar código
-pyinstaller --onefile --noconsole --name Macro --icon assets/icon.png --add-data "assets;assets" main.py
-O executável será gerado em:
-
-text
-Copiar código
-dist/Macro.exe
-⚠️ Observações Importantes
-O macro interage diretamente com mouse e teclado do sistema
-
-Utilize com cuidado durante a execução
 
 Recomenda-se testar scripts antes de uso prolongado
 
