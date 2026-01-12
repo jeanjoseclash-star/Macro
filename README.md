@@ -6,7 +6,7 @@ Voltado para automação de processos internos, sistemas de trabalho e rotinas r
 
 ---
 
-## 🚀 Funcionalidades Principais
+## Funcionalidades Principais
 
 - Captura de coordenadas de tela com tecla **F8**
 - Captura da cor de um pixel
@@ -28,7 +28,7 @@ Voltado para automação de processos internos, sistemas de trabalho e rotinas r
 
 ---
 
-## 🧩 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 
@@ -37,7 +37,7 @@ config.json
 macro.exe
 
 
-## ✨ Criando um Script de Automação
+## Criando um Script de Automação
 
 Você pode escrever comandos diretamente no editor da interface.
 
@@ -55,7 +55,7 @@ Você pode escrever comandos diretamente no editor da interface.
 
 ---
 
-## 📘 Exemplo de Script Completo
+## Exemplo de Script Completo
 
 ```python
 wait_color(500, 320)
@@ -70,7 +70,7 @@ click(900, 600)
 
 ---
 
-## 🖱️ Capturando Coordenadas
+## Capturando Coordenadas
 
 Use os botões da interface para iniciar o modo de captura:
 
@@ -83,7 +83,7 @@ Depois pressione **F8** para confirmar o pixel.
 
 ---
 
-## 🔒 Segurança – Validação da Janela
+## Segurança – Validação da Janela
 
 O sistema:
 
@@ -94,7 +94,7 @@ O sistema:
 
 ---
 
-## 💾 Salvamento Automático
+## Salvamento Automático
 
 Todos os scripts e clientes são armazenados em:
 
@@ -117,7 +117,7 @@ Estrutura:
 
 ---
 
-## 🛑 Interromper Execução
+## Interromper Execução
 
 Pressione:
 
@@ -129,14 +129,14 @@ Isto cancela imediatamente qualquer automação em andamento, mesmo dentro de lo
 
 ---
 
-## 📝 Licença
+## Licença
 
 Uso livre para estudos, automação interna e modificação pessoal.
 Revenda proibida sem autorização.
 
 ---
 
-## 👤 Autor
+## Autor
 
 Desenvolvido por Jean – 2026
 Automação inteligente com controle de janela e análise de pixel.
