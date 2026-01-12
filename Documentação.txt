@@ -1,0 +1,195 @@
+1. DOCUMENTAÇÃO TÉCNICA 
+
+Sistema de Automação – Macro Inteligente com Captura de Pixel e Execução Multietapas
+
+Visão Geral
+
+Este software implementa um ambiente de automação baseado em Python e Tkinter, com interação via mouse, teclado, captura de pixels, validação de janelas e execução sequencial de comandos registrados pelo usuário.
+
+A aplicação permite:
+
+Capturar coordenadas de tela
+
+Aguardar estabilidade de pixels
+
+Aguardar mudança de cor de pixels
+
+Realizar cliques, digitação, pressionar teclas
+
+Criar rotinas automatizadas em linguagem similar a um mini-script
+
+Armazenar scripts por cliente
+
+Garantir que a automação só ocorre na janela correta
+
+Pausar ou abortar automaticamente se a janela alvo for alterada
+
+Parar a execução global a qualquer momento com ESC
+
+Marcar visualmente a linha de script que está sendo executada
+
+Arquitetura
+
+A estrutura do sistema pode ser dividida em 6 núcleos:
+
+Interface Gráfica (Tkinter)
+
+Motor de Execução
+
+Sistema de Captura de Pixel e Cor
+
+Controle de Segurança (Janela ativa)
+
+Registro e Execução de Scripts
+
+Persistência (JSON de configuração)
+
+Fluxo de Execução
+
+O fluxo operacional se dá da seguinte forma:
+
+Usuário escolhe uma janela alvo no combobox.
+
+Usuário cria ou edita um script no editor de texto.
+
+Ao apertar Play, o sistema valida a janela durante toda a execução.
+
+Cada linha do script é executada sequencialmente.
+
+O motor valida a janela em cada passo via check().
+
+Se a janela perder o foco e não estiver dentro do período de tolerância, a execução aborta.
+
+O progresso visual é atualizado.
+
+Logs são impressos no console.
+
+Sistema de Segurança – Janela Ativa
+
+A função:
+
+validar_janela_ativa()
+
+
+obtém a janela atualmente ativa pelo título;
+
+compara com a janela que o usuário definiu;
+
+se forem diferentes, a automação é interrompida;
+
+há tolerância temporária após clicar Play, evitando falsos positivos.
+
+Funções de Automação e Ações Disponíveis
+1. click(x, y)
+
+Executa um clique automático na tela na posição especificada.
+
+2. write(texto, interval)
+
+Digita texto simulando teclado.
+
+3. press(tecla)
+
+Pressiona uma tecla simples do teclado.
+
+4. sleep(segundos)
+
+Pausa controlada que respeita check() (janela ativa).
+
+5. wait(x, y)
+
+Aguarda estabilidade do pixel — fundamental para detectar:
+
+fim de carregamento
+
+fim de animação
+
+mudança visual sutil
+
+6. wait_color(x, y)
+
+Aguarda até que a cor do pixel mude completamente.
+
+Ideal para detectar:
+
+avanços de página
+
+término de loading
+
+conclusão de operação em UI
+
+A função tenta milhares de vezes, com logs detalhados.
+
+7. checar(px, py, cx, cy)
+
+Função inteligente que:
+
+verifica cor inicial do pixel
+
+realiza um clique
+
+aguarda mudança de cor
+
+aborta a execução se falhar
+
+Captura de Pontos pelo Usuário (F8)
+
+Pressionar F8 confirma a captura atual dependendo do modo ativo:
+
+CDS → captura coordenadas para cliques
+
+WAIT → captura pixel para estabilidade
+
+CHECAR → fluxo em duas etapas
+
+WAIT_COLOR → apenas captura pixel da cor
+
+A interface exibe instruções ao usuário em cada etapa.
+
+Execução do Script Personalizado
+
+O editor de scripts aceita comandos como:
+
+click(500, 300)
+wait_color(300, 450)
+write("Jean")
+press("enter")
+sleep(2)
+checar(400, 500, 450, 530)
+
+
+O motor usa exec() com ambiente controlado para executar linha por linha.
+
+Persistência
+
+O sistema salva:
+
+nomes de clientes
+
+scripts personalizados
+
+No arquivo:
+
+config.json
+
+
+A estrutura:
+
+{
+  "clientes": {
+    "cliente_1": {
+      "nome": "João",
+      "script": "click(200,200)\nsleep(1)"
+    }
+  }
+}
+
+Threads e Interrupções
+
+A automação é executada em thread separada, permitindo:
+
+interface não travar
+
+parada com ESC
+
+destaque de linha em tempo real
