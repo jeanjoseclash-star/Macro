@@ -1,9 +1,3 @@
-Aqui está um **README.md completo, limpo, organizado e pronto para copiar e colar** no seu repositório GitHub, sem dependências do histórico da conversa.
-
-Você pode copiar exatamente como está.
-
----
-
 ```markdown
 # Macro Automática Inteligente – Python
 
