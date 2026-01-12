@@ -1,136 +1,152 @@
-# Macro – Automação de Teclado e Mouse com Interface Gráfica
+Aqui está um **README.md completo, limpo, organizado e pronto para copiar e colar** no seu repositório GitHub, sem dependências do histórico da conversa.
 
-Aplicação desktop desenvolvida em **Python** com **Tkinter**, voltada para automação de tarefas repetitivas envolvendo **mouse**, **teclado** e **espera inteligente por carregamento de tela**.  
-O sistema permite criar, salvar e executar scripts personalizados de macro, com múltiplos clientes, logs detalhados e destaque visual da linha em execução.
+Você pode copiar exatamente como está.
 
 ---
 
-## 📌 Principais Funcionalidades
+```markdown
+# Macro Automática Inteligente – Python
 
-- Interface gráfica simples e funcional (Tkinter)
-- Execução de macros com:
-  - Cliques de mouse
-  - Escrita automática de texto
-  - Pressionamento de teclas
-  - Espera inteligente por estabilização de pixel (`wait`)
-- Sistema de **WAIT inteligente** (ideal para páginas, vídeos e carregamentos)
-- Destaque visual da linha em execução no editor
-- Execução repetida do script (loop configurável)
-- Salvamento de scripts por cliente
+Este projeto implementa uma macro avançada em Python com captura de pixel, detecção de mudança de cor, clique automatizado, teclado virtual, validação de janela ativa e execução de scripts personalizados linha a linha.  
+Voltado para automação de processos internos, sistemas de trabalho e rotinas repetitivas.
+
+---
+
+## 🚀 Funcionalidades Principais
+
+- Captura de coordenadas de tela com tecla **F8**
+- Captura da cor de um pixel
+- Execução de script personalizado linha a linha
+- Funções de automação integradas:
+  - `click(x, y)`
+  - `write("texto")`
+  - `press("tecla")`
+  - `sleep(segundos)`
+  - `wait(x, y)` — aguarda pixel estabilizar
+  - `wait_color(x, y)` — aguarda pixel mudar de cor
+  - `checar(px, py, cx, cy)` — clica e valida mudança
+- Controle de foco:
+  - Automação pausa/para caso a janela ativa mude
+- Editor com destaque da linha executada
+- Multi-cliente com scripts salvos automaticamente
 - Logs detalhados de execução
-- Interrupção global por tecla **ESC**
-- Captura rápida de coordenadas por tecla **F8**
-- Compatível com versão empacotada `.exe` (PyInstaller)
+- Botão stop global (ESC)
 
 ---
 
-## 🖥️ Interface
+## 🧩 Estrutura do Projeto
 
-A interface é composta por:
-- Editor de script
-- Barra de progresso
-- Status em tempo real
-- Botões de controle (Play, Stop, CDS, Wait, Salvar, Novo cliente)
+```
 
-Cada linha executada é destacada visualmente durante a execução do macro.
+main.py
+config.json
+macro.exe
 
----
 
-## 🧠 Conceito do WAIT Inteligente
+## ✨ Criando um Script de Automação
 
-O comando `wait(x, y)` **não depende de cor fixa**.
+Você pode escrever comandos diretamente no editor da interface.
 
-Ele funciona da seguinte forma:
-- Monitora o pixel na posição informada
-- Aguarda até que a cor **estabilize por vários ciclos consecutivos**
-- Só libera a execução quando o pixel parar de variar
+### Funções disponíveis
 
-Esse comportamento é ideal para:
-- Carregamento de páginas
-- Vídeos (ex: YouTube)
-- Telas de loading
-- Elementos dinâmicos
+| Função                   | Descrição                 |
+| ------------------------ | ------------------------- |
+| `click(x, y)`            | Clique exato na posição   |
+| `write("texto")`         | Digitação simulada        |
+| `press("enter")`         | Tecla única               |
+| `sleep(2)`               | Pausa em segundos         |
+| `wait(x, y)`             | Aguarda pixel estabilizar |
+| `wait_color(x, y)`       | Aguarda pixel mudar       |
+| `checar(px, py, cx, cy)` | Clica e verifica cor      |
 
 ---
 
-## ✍️ Linguagem de Script
+## 📘 Exemplo de Script Completo
 
-O editor aceita comandos simples, linha por linha.
-
-### Comandos disponíveis
-
-click(x, y)
-write("texto")
-press("enter")
-sleep(segundos)
-wait(x, y)
-Também disponíveis em português:
-
-clique(x, y)
-escreva("texto")
-aperte("enter")
-espere(segundos)
-aguarde(x, y)
-
-Exemplo de Script
-python
-
-click(500, 300)
+```python
+wait_color(500, 320)
+click(800, 450)
 sleep(1)
-write("youtube.com")
+write("Acesso Liberado")
 press("enter")
-wait(134, 100)
-click(800, 120)
-🎯 Captura Rápida de Ações
-Capturar clique (CDS)
-Clique no botão CDS
+checar(300, 200, 350, 240)
+sleep(0.5)
+click(900, 600)
+```
 
-Posicione o mouse
+---
 
-Pressione F8
+## 🖱️ Capturando Coordenadas
 
-A linha click(x, y) será inserida automaticamente
+Use os botões da interface para iniciar o modo de captura:
 
-Capturar WAIT
-Clique no botão Wait
+* **Captura Coordenada (CDS)**
+* **Wait**
+* **Checar**
+* **Wait Color**
 
-Posicione o mouse sobre o ponto desejado
+Depois pressione **F8** para confirmar o pixel.
 
-Pressione F8
+---
 
-A linha wait(x, y) será inserida no editor
+## 🔒 Segurança – Validação da Janela
 
-⌨️ Teclas Globais
-Tecla	Função
-F8	Confirmar CDS ou WAIT
-ESC	Interromper execução do macro
+O sistema:
 
-📂 Estrutura do Projeto
-Macro/
-├── main.py
-├── config.json
-├── assets/
-│   └── icon.png
-├── dist/
-│   └── Macro.exe
-└── README.md
-⚙️ Tecnologias Utilizadas
-Python 3.8 (32-bit)
+* identifica o título da janela ativa
+* compara com a janela alvo escolhida
+* aborta a automação se a janela for trocada
+* evita erros e automações fora de contexto
 
-Tkinter
+---
 
-PyAutoGUI
+## 💾 Salvamento Automático
 
-Keyboard
+Todos os scripts e clientes são armazenados em:
 
-PyInstaller
+```
+config.json
+```
 
-Recomenda-se testar scripts antes de uso prolongado
+Estrutura:
 
-Alguns antivírus podem gerar falso positivo em automações
+```json
+{
+  "clientes": {
+    "cliente1": {
+      "nome": "Exemplo",
+      "script": "click(200,200)\nwait(300,300)"
+    }
+  }
+}
+```
 
-👤 Autor
-Jean Developer
-Projeto desenvolvido para automação de tarefas repetitivas com foco em confiabilidade, controle visual e estabilidade.
+---
 
-© 2025 – Todos os direitos reservados
+## 🛑 Interromper Execução
+
+Pressione:
+
+```
+ESC
+```
+
+Isto cancela imediatamente qualquer automação em andamento, mesmo dentro de loops ou waits.
+
+---
+
+## 📝 Licença
+
+Uso livre para estudos, automação interna e modificação pessoal.
+Revenda proibida sem autorização.
+
+---
+
+## 👤 Autor
+
+Desenvolvido por Jean – 2026
+Automação inteligente com controle de janela e análise de pixel.
+
+---
+
+```
